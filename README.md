@@ -6,18 +6,18 @@
 
 **What locations/rooms does your game have?**
 
-1. The Wall (starting location)
-2. East Wall
+1. The Wall - starting location
+2. East Wall - enter spring court
 3. West Wall
 4. Approach the Wall Faerie
-5. Bargaining with the Wall Faerie
+5. Bargaining with the Wall Faerie - enter spring court or end game
 6. Forest Bordering The Wall
 7. Edge of the Forest
-8. Forest Clearing
-9. Middle of the Forest
-10. Dark Forest
-11. The Mortal Lands
-12. The Spring Court
+8. Forest Clearing - iron dagger
+9. Middle of the Forest - magic amulet
+10. Dark Forest - beast attack
+11. The Mortal Lands - faerie tolken
+12. The Spring Court - goal location
 
 **What items does your game have?**
 
@@ -43,13 +43,13 @@ Additionally, I implemented two other structs: Item and Action. The Item struct 
 ### Ending 1: Successfully Enter the Spring Court Via a Sneaky Bargain with the Wall Faerie
 
 ```
-["south", "south", "south", "take amulet", "wear amulet", "north, "north", "north", "west", "approach", "bargain", "accept"]
+["south", "south", "south", "take magic amulet", "wear magic amulet", "north, "north", "north", "west", "approach", "bargain", "accept"]
 ```
 
 ### Ending 2: Successfully Enter the Spring Court Via a Hole in The Wall
 
 ```
-["east", "cross"]
+["south", "south", "south", "south", "take faerie tolken", "north", "north", "north", "north", "east", "cross"]
 ```
 
 ### Ending 3: Die Trying to Enter the Spring Court Via a Bad Bargain with the Wall Faerie

@@ -27,7 +27,6 @@ struct Action {
 
 struct Item {
     let name: String
-    // Add additional properties if necessary
 }
 
 struct Court: Location {
@@ -66,6 +65,7 @@ struct YourGame: AdventureGame {
     var inventory: [Item]
     var isWearingAmulet: Bool
     var hasDagger: Bool
+    var hasToken: Bool
     
     // MARK: - Initializer
     
@@ -76,6 +76,7 @@ struct YourGame: AdventureGame {
         inventory = []
         isWearingAmulet = false
         hasDagger = false
+        hasToken = false
         
         // Define actions
         let wallListen = Action(
@@ -130,8 +131,9 @@ struct YourGame: AdventureGame {
         )
         
         // Define items
-        let ironDagger = Item(name: "dagger")
-        let magicAmulet = Item(name: "amulet")
+        let ironDagger = Item(name: "iron dagger")
+        let magicAmulet = Item(name: "magic amulet")
+        let faerieToken = Item(name: "faerie token")
         
         // Define locations
         let spring = Court(
@@ -212,8 +214,9 @@ struct YourGame: AdventureGame {
         
         let mortal = Court(
             name: "The Mortal Lands",
-            description: "You continue walking along the path until the thick starts to clear.As you emerge from the edge of the forest, The Mortal Lands unfold before you—rolling green hills under a vast, open sky. Small villages dot the landscape, nestled between patches of farmland and winding rivers. Everything appears calm and serene, but an invisible boundary holds you in place, the weight of magic pressing against you. Though peaceful, it's clear that something greater keeps you from venturing further into this world—a reminder that you belong to the lands beyond the Wall.",
-            exits: ["north": "Forest"]
+            description: "You continue along the path, and the thick trees gradually give way to open space. As you emerge from the edge of the forest, the Mortal Lands unfold before you—rolling green hills stretch under a vast, open sky. Small villages are scattered across the landscape, nestled between fields and winding rivers. The scene is peaceful, yet an unseen barrier holds you back, the magic pressing against you like a wall. Just as you start to turn back, something catches your eye—half-buried in the grass, a small, glowing Faerie Token rests near the tree line, its faint light pulsing with ancient magic. Perhaps this is the key to crossing into Prythian.",
+            exits: ["north": "Forest"],
+            items: [faerieToken]
         )
         
         
@@ -285,6 +288,8 @@ struct YourGame: AdventureGame {
             // Check if the player is attempting to make a bargain
             if currentLocationName == "Bargaining with the Wall Faerie" && direction == "accept" {
                 makeBargain(context: context)
+            } else if currentLocationName == "East Wall" && direction == "cross" {
+                attemptToCrossWall(context: context)
             } else if nextLocationName == "Dark Forest" {
                 encounterBeast(context: context)
             } else {
@@ -300,7 +305,19 @@ struct YourGame: AdventureGame {
             context.write("You can't go that way.")
         }
     }
-    
+
+    mutating func attemptToCrossWall(context: AdventureGameContext) {
+        let hasFaerieToken = inventory.contains { $0.name.lowercased() == "faerie token" }
+        
+        if hasFaerieToken {
+            context.write("You hold up the faerie token, and the magic around the gap in the Wall shimmers and parts, allowing you to pass through safely.")
+            currentLocationName = "Spring Court"
+            winGame(context: context)
+        } else {
+            context.write("You attempt to squeeze through the gap, but an invisible force repels you. It seems you need something special to pass through here.")
+        }
+    }
+
     mutating func makeBargain(context: AdventureGameContext) {
         if isWearingAmulet {
             context.write("The faerie’s smile falters as dark magic swirls around you. The amulet around your neck flares with light, shielding you from the curse. The faerie scowls but waves their hand, opening a shimmering passage through the Wall.")
@@ -319,7 +336,7 @@ struct YourGame: AdventureGame {
     
     mutating func encounterBeast(context: AdventureGameContext) {
         context.write("The forest around you grows darker, the trees closing in like a cage. Suddenly, a low growl rumbles from the shadows. A massive beast, its eyes glowing with feral hunger, emerges from the underbrush. Its fur bristles as it bares its teeth, ready to strike. You know instinctively that magic alone won’t save you here.")
-        hasDagger = inventory.contains { $0.name.lowercased() == "dagger" }
+        hasDagger = inventory.contains { $0.name.lowercased() == "iron dagger" }
         if hasDagger {
             context.write("You draw the iron dagger, the weight of the weapon steadying your hand. The beast lunges, but the moment the iron blade slices through the air, the creature recoils, howling in pain. With a final blow, the beast falls, and the forest falls silent once more. The dagger’s iron edge has saved your life.")
             currentLocationName = "Dark Forest"
@@ -337,7 +354,7 @@ struct YourGame: AdventureGame {
         var attributedString = AttributedString("You've made it to the Spring Court, but your journey has only just begun.")
         attributedString.swiftUI.foregroundColor = .green
         attributedString.inlinePresentationIntent = .emphasized // This applies italics
-        context.write("As you step through the Wall, the world transforms around you. The oppressive weight of the forest lifts, replaced by the warmth of eternal spring. Lush meadows stretch before you, dotted with wildflowers of every color imaginable. Sunlight filters gently through the canopy of vibrant, green trees, casting dappled patterns on the ground. A crystal-clear stream winds its way through the landscape, its soft gurgling adding to the sense of peace. The air is thick with the sweet scent of blossoms, and birds sing harmoniously from the branches above.")
+        context.write("As you step through the Wall, the world shifts. The heavy gloom of the forest lifts, replaced by the warmth of eternal spring. Lush meadows stretch out, dotted with vibrant wildflowers, while sunlight filters through the green canopy. A clear stream winds through the landscape, and the air is filled with the sweet scent of blossoms and birdsong.")
         context.write("The warmth of the Spring Court embraces you as you step through the Wall. You take a breath and feel the magic all around you.")
         context.write(attributedString)
         context.endGame()
@@ -368,33 +385,33 @@ struct YourGame: AdventureGame {
     func describe(context: AdventureGameContext) {
         if let location = locations[currentLocationName] {
             context.write(location.description)
-            displayExits(context: context)
-            displayItems(context: context)
+//            displayExits(context: context)
+//            displayItems(context: context)
         } else {
             context.write("You are lost.")
         }
     }
     
-    func displayExits(context: AdventureGameContext) {
-        if let location = locations[currentLocationName], !location.exits.isEmpty {
-            let exits = location.exits.keys.joined(separator: ", ")
-            context.write("Exits: \(exits)")
-        }
-    }
+//    func displayExits(context: AdventureGameContext) {
+//        if let location = locations[currentLocationName], !location.exits.isEmpty {
+//            let exits = location.exits.keys.joined(separator: ", ")
+//            context.write("Exits: \(exits)")
+//        }
+//    }
     
-    func displayItems(context: AdventureGameContext) {
-        if let location = locations[currentLocationName], !location.items.isEmpty {
-            let items = location.items.map { $0.name }.joined(separator: ", ")
-            context.write("You see: \(items)")
-        }
-    }
+//    func displayItems(context: AdventureGameContext) {
+//        if let location = locations[currentLocationName], !location.items.isEmpty {
+//            let items = location.items.map { $0.name }.joined(separator: ", ")
+//            context.write("You see: \(items)")
+//        }
+//    }
     
     func displayInventory(context: AdventureGameContext) {
         if inventory.isEmpty {
             context.write("Your inventory is empty.")
         } else {
             let items = inventory.map { $0.name }.joined(separator: ", ")
-            context.write("You are carrying: \(items)")
+            context.write("Inventory: \(items)")
         }
     }
     
@@ -421,7 +438,7 @@ struct YourGame: AdventureGame {
     mutating func wearItem(named itemName: String, context: AdventureGameContext) {
         if let index = inventory.firstIndex(where: { $0.name.lowercased() == itemName.lowercased() }) {
             let item = inventory[index]
-            if item.name.lowercased() == "amulet" {
+            if item.name.lowercased() == "magic amulet" {
                 isWearingAmulet = true
                 context.write("You put the \(item.name) on. You feel a protective aura surround you.")
             } else {
